@@ -72,24 +72,28 @@ void loop() {
   //digitalWrite(LED_BUILTIN, ledon);
   if ((oldflags != statusFlags) || (millis() - lastMessageTime > 3000)) {
     long timer = millis();
-    if (!sendStatus(statusFlags)) lastErrorTime = millis();
-
+    
+    // send the keys through USB if we are connected
     updateKeys(oldflags, statusFlags);
+    // send the updated keys over radio
+    if (!sendStatus(statusFlags)) {
+      // if it didn't work, store the time
+      lastErrorTime = millis();
+      // and reset the flags so we'll try again next time around
+      statusFlags = oldflags; 
+    }
+    
     // debounce
     while (millis() - timer < 1) delay(1);
     lastMessageTime = millis();
   }
 
   uint64_t colour = getColourForBattery();
-  //  uint32_t red = colour >> 16;
-  //  uint32_t green = (colour >> 8) & 0xff;
-  //Serial.println(colour, HEX);
   bool ledOn = false;
 
   if ((lastErrorTime < 0) || (keySendActive)) {
     if ((millis() < 2000) && (millis() % 200 < 100)) ledOn = true;
     else if ((millis() - lastMessageTime < 300) && (millis() % 100 < 50)) ledOn = true;
-
     digitalWrite(LED_BUILTIN, (millis() % 800 < 100));
     colour = ledOn ? colour : 0;
   } else {
@@ -117,15 +121,11 @@ void loop() {
     brightness = (brightness*0.05) + 0.05f;  
     colour |= strip.Color(r*brightness, g*brightness, b*brightness);
   }
-  //if(lastColour!=colour) {
-  strip.setPixelColor(0, colour);
-  strip.show();
-  lastColour = colour;
-  //}
-  //  if (millis() - lastWatchdogReset > (  2000)) {
-  //    Watchdog.reset();
-  //    lastWatchdogReset = millis();
-  //  }
+  if(lastColour!=colour) {
+    strip.setPixelColor(0, colour);
+    strip.show();
+    lastColour = colour;
+  }
 }
 
 
