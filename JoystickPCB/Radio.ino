@@ -99,8 +99,6 @@ bool sendStatus(uint8_t statusflags) {
   lastMessageTime = millis(); 
   return sendsuccess; 
   
-
-  return true;
 }
 
 #endif

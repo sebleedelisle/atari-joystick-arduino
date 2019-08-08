@@ -1,4 +1,4 @@
-#define BATTERY_VOLTAGE_PIN A5
+#define BATTERY_VOLTAGE_PIN A9
 
 //
 //const int numReadings = 1000;
@@ -11,11 +11,11 @@ float currentVoltage = 0;  // volts*100
 
 
 uint32_t getColourForBattery() {
-  float reading = (float)analogRead(BATTERY_VOLTAGE_PIN) *2 * 330          / 1024; 
+  float reading = (float)analogRead(BATTERY_VOLTAGE_PIN) *2 * 330 / 1024; 
   if(currentVoltage == 0 ) currentVoltage = reading; 
   else currentVoltage+=(((float)reading-currentVoltage)*0.05f); 
   //Serial.print("batt : ");
-  //   Serial.println(currentVoltage);
+     //Serial.println(reading);
 
   if (currentVoltage > 400) return 0x00ff00;
   else if (currentVoltage > 370) return 0x66ff00;
