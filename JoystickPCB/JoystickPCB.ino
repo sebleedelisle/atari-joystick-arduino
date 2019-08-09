@@ -74,7 +74,8 @@ void loop() {
   // send the keys through USB if we are connected
   updateKeys(statusFlags);
   
-  //digitalWrite(LED_BUILTIN, ledon);
+  // if it's changed, or we haven't sent an update for 3 seconds... 
+
   if ((oldflags != statusFlags) || (millis() - lastMessageTime > 3000)) {
     long timer = millis();
   
@@ -99,28 +100,39 @@ void loop() {
   uint64_t colour = getColourForBattery();
   bool ledOn = false;
 
-  if ((lastErrorTime < 0)) { //  || (keySendActive)) {
+  //if ((lastErrorTime < 0)) { //  || (keySendActive)) {
+
+  
     if ((millis() < 2000) && (millis() % 200 < 100)) ledOn = true;
-    else if ((millis() - lastMessageTime < 300) && (millis() % 100 < 50)) ledOn = true;
+    else if ((millis() - lastMessageTime < 100) && (millis() % 100 < 50)) ledOn = true;
     digitalWrite(LED_BUILTIN, (millis() % 800 < 100));
     colour = ledOn ? colour : 0;
-  } else {
-    //Serial.println("FAILED!"); 
-    //last message failed!
-    int shortdelay = 50;
-    int longdelay = 100;
 
-    int flashcount = 2;
 
-    int patternlength = ((shortdelay * flashcount * 2) + longdelay) * 2;
-    int progress = millis() % patternlength;
-    uint64_t flashcolour =  (progress < patternlength >> 1) ? getColourForBattery() : strip.Color(0, 0, 255, 0);
-    int halfpatternprogress = progress % (patternlength >> 1);
-    colour =  ((halfpatternprogress < shortdelay * flashcount * 2) && ((halfpatternprogress % (shortdelay * 2)) < shortdelay)) ? flashcolour : 0;
-    if (millis() - lastErrorTime > 2000) lastErrorTime = -1;
-    //colour = strip.Color(0,0,255); 
-  }
-  if (!digitalRead(BATTERY_CHARGE_PIN)) {
+    
+//  } else {
+//    //Serial.println("FAILED!"); 
+//    //last message failed!
+//    int shortdelay = 50;
+//    int longdelay = 100;
+//
+//    int flashcount = 2;
+//
+//    int patternlength = ((shortdelay * flashcount * 2) + longdelay) * 2;
+//    int progress = millis() % patternlength;
+//    uint64_t flashcolour =  (progress < patternlength >> 1) ? getColourForBattery() : strip.Color(0, 0, 255, 0);
+//    int halfpatternprogress = progress % (patternlength >> 1);
+//    colour =  ((halfpatternprogress < shortdelay * flashcount * 2) && ((halfpatternprogress % (shortdelay * 2)) < shortdelay)) ? flashcolour : 0;
+//    if (millis() - lastErrorTime > 2000) lastErrorTime = -1;
+//    //colour = strip.Color(0,0,255); 
+//  }
+  if (lastErrorTime > 0) {
+
+    colour |= strip.Color(0,0,100);
+    // should stay blue for a minute after an error
+    if(millis()-lastErrorTime>60000) lastErrorTime = -1; 
+    
+  } else if (!digitalRead(BATTERY_CHARGE_PIN)) {
     uint64_t chargeColour = getColourForBattery(); 
     int r = chargeColour>>16; 
     int g = (chargeColour>>8) & 0xff;
